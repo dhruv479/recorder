@@ -1,48 +1,105 @@
 <!DOCTYPE html>
+
+<head>
+    <title>
+        Media Recorder
+    </title>
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script> -->
+</head>
+
 <body>
     <a href="" id="download">Download</a>
     <button id="stop">Stop</button>
-    <button type="button" onclick="recordAudio()">Record</button>
+    <button type="button" onclick="recordAudio()">Record Audio</button>
+    <button type="button" onclick="recordVideo()">Record Video</button>
+    <button type="button" onclick="recordScreen()">Record Screen</button>
 </body>
 <script>
-  let shouldStop = false;
-  let stopped = false;
-  const downloadLink = document.getElementById('download');
-  const stopButton = document.getElementById('stop');
+    var mimeType = 'video/webm';
+    let shouldStop = false;
+    let stopped = false;
+    const downloadLink = document.getElementById('download');
+    const stopButton = document.getElementById('stop');
 
-  stopButton.addEventListener('click', function() {
-    shouldStop = true;
-  });
-
-  const handleSuccess = function(stream) {
-    let recordedChunks = [];
-    const mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
-
-    mediaRecorder.ondataavailable = function(e) {
-      if (e.data.size > 0) {
-          console.log("new data in stream")
-        recordedChunks.push(e.data);
-      }
-
-      if(shouldStop === true && stopped === false) {
-        mediaRecorder.stop();
-        stopped = true;
-      }
-    };
-
-    mediaRecorder.addEventListener('stop', function() {
-        const blob = new Blob(recordedChunks, {type: 'audio/webm'});
-        recordedChunks = []
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = 'test.wav';
+    stopButton.addEventListener('click', function() {
+        shouldStop = true;
     });
 
-    mediaRecorder.start(200);
-  };
+    const handleSuccess = function(stream) {
+        let recordedChunks = [];
+        stopped = false;
+        const mediaRecorder = new MediaRecorder(stream);
 
-  function recordAudio() {
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-        .then(handleSuccess);
-  }
-  </script>
+        mediaRecorder.ondataavailable = function(e) {
+            if (e.data.size > 0) {
+                console.log("new data in stream")
+                recordedChunks.push(e.data);
+            }
+
+            if (shouldStop === true && stopped === false) {
+                mediaRecorder.stop();
+                stopped = true;
+            }
+        };
+
+        mediaRecorder.addEventListener('stop', function() {
+            const blob = new Blob(recordedChunks, {
+                type: mimeType
+            });
+            recordedChunks = []
+            downloadLink.href = URL.createObjectURL(blob);
+            const filename = window.prompt('Enter file name');
+            downloadLink.download = `${filename}.mp4`;
+        });
+
+        mediaRecorder.start(200);
+    };
+
+    function recordAudio() {
+        mimeType = 'audio/webm';
+        shouldStop = false;
+        const constraints = {
+            audio: {
+                echoCancellation: true
+            }
+        }
+        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+    }
+
+    function recordVideo() {
+        mimeType = 'video/webm';
+        shouldStop = false;
+        const constraints = {
+            audio: {
+                "echoCancellation": true
+            },
+            video: {
+                "width": {
+                    "min": 640,
+                    "max": 1024
+                },
+                "height": {
+                    "min": 480,
+                    "max": 768
+                }
+            }
+        };
+        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+    }
+
+    function recordScreen() {
+        mimeType = 'video/webm';
+        shouldStop = false;
+        const constraints = {
+            video: {
+                cursor: 'always'
+            }
+        };
+        navigator.mediaDevices.getDisplayMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+    }
+</script>
+
 </html>
