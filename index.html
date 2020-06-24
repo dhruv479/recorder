@@ -94,9 +94,7 @@
         mimeType = 'video/webm';
         shouldStop = false;
         const constraints = {
-            video: {
-                cursor: 'always'
-            }
+            video: true
         };
         navigator.mediaDevices.getDisplayMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
     }
