@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<body>
+    <a href="" id="download">Download</a>
+    <button id="stop">Stop</button>
+    <button type="button" onclick="recordAudio()">Record</button>
+</body>
+<script>
+  let shouldStop = false;
+  let stopped = false;
+  const downloadLink = document.getElementById('download');
+  const stopButton = document.getElementById('stop');
+
+  stopButton.addEventListener('click', function() {
+    shouldStop = true;
+  });
+
+  const handleSuccess = function(stream) {
+    let recordedChunks = [];
+    const mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+
+    mediaRecorder.ondataavailable = function(e) {
+      if (e.data.size > 0) {
+          console.log("new data in stream")
+        recordedChunks.push(e.data);
+      }
+
+      if(shouldStop === true && stopped === false) {
+        mediaRecorder.stop();
+        stopped = true;
+      }
+    };
+
+    mediaRecorder.addEventListener('stop', function() {
+        const blob = new Blob(recordedChunks, {type: 'audio/webm'});
+        recordedChunks = []
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = 'test.wav';
+    });
+
+    mediaRecorder.start(200);
+  };
+
+  function recordAudio() {
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+        .then(handleSuccess);
+  }
+  </script>
+</html>
