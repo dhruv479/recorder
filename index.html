@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <a href="" id="download">Download</a>
+    <a id="download">Download</a>
     <button id="stop">Stop</button>
     <button type="button" onclick="recordAudio()">Record Audio</button>
     <button type="button" onclick="recordVideo()">Record Video</button>
@@ -94,7 +94,9 @@
         mimeType = 'video/webm';
         shouldStop = false;
         const constraints = {
-            video: true
+            video: {
+                cursor: 'motion'
+            }
         };
         navigator.mediaDevices.getDisplayMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
     }
