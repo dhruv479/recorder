@@ -18,24 +18,26 @@
     <button type="button" onclick="recordScreen()">Record Screen</button>
 </body>
 <script>
-    var mimeType = 'video/webm';
     let shouldStop = false;
     let stopped = false;
     const downloadLink = document.getElementById('download');
     const stopButton = document.getElementById('stop');
 
-    stopButton.addEventListener('click', function() {
+    const audioRecordConstraints = {
+        echoCancellation: true
+    }
+
+    stopButton.addEventListener('click', function () {
         shouldStop = true;
     });
 
-    const handleSuccess = function(stream) {
+    const handleRecord = function ({stream, mimeType}) {
         let recordedChunks = [];
         stopped = false;
         const mediaRecorder = new MediaRecorder(stream);
 
-        mediaRecorder.ondataavailable = function(e) {
+        mediaRecorder.ondataavailable = function (e) {
             if (e.data.size > 0) {
-                console.log("new data in stream")
                 recordedChunks.push(e.data);
             }
 
@@ -45,7 +47,7 @@
             }
         };
 
-        mediaRecorder.addEventListener('stop', function() {
+        mediaRecorder.addEventListener('stop', function () {
             const blob = new Blob(recordedChunks, {
                 type: mimeType
             });
@@ -58,19 +60,15 @@
         mediaRecorder.start(200);
     };
 
-    function recordAudio() {
-        mimeType = 'audio/webm';
+    async function recordAudio() {
+        const mimeType = 'audio/webm';
         shouldStop = false;
-        const constraints = {
-            audio: {
-                echoCancellation: true
-            }
-        }
-        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+        const stream = await navigator.mediaDevices.getUserMedia({audio: audioRecordConstraints});
+        handleRecord({stream, mimeType})
     }
 
-    function recordVideo() {
-        mimeType = 'video/webm';
+    async function recordVideo() {
+        const mimeType = 'video/webm';
         shouldStop = false;
         const constraints = {
             audio: {
@@ -87,18 +85,24 @@
                 }
             }
         };
-        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('adsgfd');
+        handleRecord({stream, mimeType})
     }
 
-    function recordScreen() {
-        mimeType = 'video/webm';
+    async function recordScreen() {
+        const mimeType = 'video/webm';
         shouldStop = false;
         const constraints = {
             video: {
                 cursor: 'motion'
             }
         };
-        navigator.mediaDevices.getDisplayMedia(constraints).then(handleSuccess).catch(error => alert(error.message));
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({video: {cursor: "motion"}, audio: {'echoCancellation': true}});
+        const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: {'echoCancellation': true}, video: false });
+        let tracks = [...displayStream.getTracks(), ...voiceStream.getAudioTracks()]
+        const stream = new MediaStream(tracks);
+        handleRecord({stream, mimeType})
     }
 </script>
 
