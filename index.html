@@ -2,27 +2,38 @@
 
 <head>
     <title>
-        Media Recorder
+        Recorder v2
     </title>
-    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script> -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-    <a id="download">Download</a>
-    <button id="stop">Stop</button>
-    <button type="button" onclick="recordAudio()">Record Audio</button>
-    <button type="button" onclick="recordVideo()">Record Video</button>
-    <button type="button" onclick="recordScreen()">Record Screen</button>
+    <div class="container mt-3">
+    <span><a id="download" style="display: none;"><button type="button" class="btn btn-primary mb-4"> Download</button></a></span>
+    <button type="button" class="btn btn-danger" id="stop" disabled>Stop</button>
+    <button type="button" onclick="recordAudio()" class="btn btn-info">Record Audio</button>
+    <button type="button" onclick="recordVideo()" class="btn btn-info">Record Video</button>
+    <button type="button" onclick="recordScreen()" class="btn btn-info">Record Screen</button>
+    </div>
 </body>
 <script>
     let shouldStop = false;
     let stopped = false;
     const downloadLink = document.getElementById('download');
     const stopButton = document.getElementById('stop');
-
+    function startRecord() {
+        $('.btn-info').prop('disabled', true);
+        $('#stop').prop('disabled', false);
+        $('#download').css('display', 'none')
+    }
+    function stopRecord() {
+        $('.btn-info').prop('disabled', false);
+        $('#stop').prop('disabled', true);
+        $('#download').css('display', 'block')
+    }
     const audioRecordConstraints = {
         echoCancellation: true
     }
@@ -32,6 +43,7 @@
     });
 
     const handleRecord = function ({stream, mimeType}) {
+        startRecord()
         let recordedChunks = [];
         stopped = false;
         const mediaRecorder = new MediaRecorder(stream);
@@ -52,9 +64,10 @@
                 type: mimeType
             });
             recordedChunks = []
-            downloadLink.href = URL.createObjectURL(blob);
             const filename = window.prompt('Enter file name');
+            downloadLink.href = URL.createObjectURL(blob);
             downloadLink.download = `${filename}.mp4`;
+            stopRecord();
         });
 
         mediaRecorder.start(200);
