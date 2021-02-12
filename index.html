@@ -59,10 +59,10 @@
             }
         };
 
-        mediaRecorder.addEventListener('stop', function () {
+        mediaRecorder.onstop = function () {
             const blob = new Blob(recordedChunks, {
                 type: mimeType
-            });
+            };
             recordedChunks = []
             const filename = window.prompt('Enter file name');
             downloadLink.href = URL.createObjectURL(blob);
@@ -99,7 +99,6 @@
             }
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log('adsgfd');
         handleRecord({stream, mimeType})
     }
 
