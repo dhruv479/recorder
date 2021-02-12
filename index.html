@@ -62,13 +62,13 @@
         mediaRecorder.onstop = function () {
             const blob = new Blob(recordedChunks, {
                 type: mimeType
-            };
+            });
             recordedChunks = []
             const filename = window.prompt('Enter file name');
             downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = `${filename}.mp4`;
+            downloadLink.download = `${filename}.webm`;
             stopRecord();
-        });
+        };
 
         mediaRecorder.start(200);
     };
