@@ -111,7 +111,7 @@
             }
         };
         const displayStream = await navigator.mediaDevices.getDisplayMedia({video: {cursor: "motion"}, audio: {'echoCancellation': true}});
-        if(window.prompt("Record audio with screen")){
+        if(window.confirm("Record audio with screen?")){
             const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: {'echoCancellation': true}, video: false });
             let tracks = [...displayStream.getTracks(), ...voiceStream.getAudioTracks()]
             const stream = new MediaStream(tracks);
