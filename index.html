@@ -122,8 +122,19 @@
         let stream = null;
         const displayStream = await navigator.mediaDevices.getDisplayMedia({video: {cursor: "motion"}, audio: {'echoCancellation': true}});
         if(window.confirm("Record audio with screen?")){
+            const audioContext = new AudioContext();
+
             const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: {'echoCancellation': true}, video: false });
-            let tracks = [...displayStream.getTracks(), ...voiceStream.getAudioTracks()]
+
+            const audioIn01 = audioContext.createMediaStreamSource(displayStream);
+            const audioIn02 = audioContext.createMediaStreamSource(voiceStream);
+
+            const audioDestination = audioContext.createMediaStreamDestination();
+
+            audioIn01.connect(audioDestination);
+            audioIn02.connect(audioDestination);
+
+            const tracks = [...displayStream.getVideoTracks(), ...audioDestination.stream.getTracks()]
             stream = new MediaStream(tracks);
             handleRecord({stream, mimeType})
         } else {
