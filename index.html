@@ -125,14 +125,15 @@
             const audioContext = new AudioContext();
 
             const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: {'echoCancellation': true}, video: false });
-
-            const audioIn01 = audioContext.createMediaStreamSource(displayStream);
-            const audioIn02 = audioContext.createMediaStreamSource(voiceStream);
-
+            const userAudio = audioContext.createMediaStreamSource(voiceStream);
+            
             const audioDestination = audioContext.createMediaStreamDestination();
+            userAudio.connect(audioDestination);
 
-            audioIn01.connect(audioDestination);
-            audioIn02.connect(audioDestination);
+            if(displayStream.getAudioTracks().length > 0) {
+                const displayAudio = audioContext.createMediaStreamSource(displayStream);
+                displayAudio.connect(audioDestination);
+            }
 
             const tracks = [...displayStream.getVideoTracks(), ...audioDestination.stream.getTracks()]
             stream = new MediaStream(tracks);
